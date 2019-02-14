@@ -179,19 +179,12 @@ RayHitResult Scene::IntersectByRay(Ray& ray)
 {
 	//Initialise the default intersection result
 	RayHitResult result = Ray::s_defaultHitResult;
-	
-	//Initialise the scene object iterator
-	std::vector<Primitive*>::iterator prim_iter = m_sceneObjects.begin();
 
-	//TODO: Implement ray to scene intersection
-	//All geometric objects are stored in m_sceneObjects.
-	//To find out which object intersects with the ray
-	//1. Enumerate through each primitive in m_sceneObjects
-	//2. For each primitive, there is an IntersectByRay method which can be called to test for intersection
-	//
-	//Remember: a ray can potentially intersect with more than one object
-	//We are only interested in the closest one, i.e. one with the smallest positive t
-	//Check result.t for the parametric result of the interesection
+	for (auto primitive = m_sceneObjects.begin(); primitive != m_sceneObjects.end(); ++primitive)
+	{
+		auto res = (*primitive)->IntersectByRay(ray);
+		if (res.t > 0 && res.t < result.t) result = res;
+	}
 
 	return result;
 }
