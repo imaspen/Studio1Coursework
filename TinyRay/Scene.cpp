@@ -11,7 +11,6 @@
 #include "Sphere.h"
 #include "Plane.h"
 #include "Box.h"
-#include <iostream>
 
 Scene::Scene()
 {
