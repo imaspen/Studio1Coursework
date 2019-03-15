@@ -180,10 +180,10 @@ RayHitResult Scene::IntersectByRay(Ray& ray)
 	//Initialise the default intersection result
 	RayHitResult result = Ray::s_defaultHitResult;
 
-	for (auto primitive = m_sceneObjects.begin(); primitive != m_sceneObjects.end(); ++primitive)
+	for (const auto& sceneObject : m_sceneObjects)
 	{
-		auto res = (*primitive)->IntersectByRay(ray);
-		if (res.t > 0 && res.t < result.t) result = res;
+		RayHitResult currentResult = sceneObject->IntersectByRay(ray);
+		if (currentResult.t > 0 && currentResult.t < result.t) result = currentResult;
 	}
 
 	return result;
