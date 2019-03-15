@@ -184,8 +184,18 @@ Colour RayTracer::TraceScene(Scene* pScene, Ray& ray, Colour incolour, int trace
 
 		if (m_traceflag & TRACE_SHADOW)
 		{
-			//TODO: Adventurous Requirement
 			//Trace the shadow ray
+			Ray *shadowRay = new Ray();
+			Vector3 start = result.point;
+			Vector3 end = light_list->at(0)->GetLightPosition();
+			Vector3 direction = end - start;
+			direction.Normalise();
+			shadowRay->SetRay(start, direction);
+			RayHitResult shadowRayHitResult = pScene->IntersectByRay(*shadowRay);
+			if (((Primitive*)shadowRayHitResult.data)->m_primtype == Primitive::PRIMTYPE_Sphere ||
+				((Primitive*)shadowRayHitResult.data)->m_primtype == Primitive::PRIMTYPE_Box) {
+				outcolour = outcolour * Colour(0.25, 0.25, 0.25);
+			}
 		}
 	}
 
