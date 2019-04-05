@@ -167,8 +167,16 @@ Colour RayTracer::TraceScene(Scene* pScene, Ray& ray, Colour incolour, int trace
 			if (((Primitive*)result.data)->m_primtype == Primitive::PRIMTYPE_Sphere ||
 				((Primitive*)result.data)->m_primtype == Primitive::PRIMTYPE_Box)
 			{
-				//TODO: Adventurous Requirement
-				//Trace the reflection on Spheres and Boxes
+				Vector3 view_vector = result.point - start;
+				view_vector.Normalise();
+				Vector3 reflect_vector = view_vector.Reflect(result.normal);
+				Vector3 reflect_start = result.point + (reflect_vector * 0.01);
+				Ray *reflect_ray = new Ray();
+				reflect_ray->SetRay(reflect_start, reflect_vector);
+				RayHitResult reflect_result = pScene->IntersectByRay(*reflect_ray);
+				if (reflect_result.data) {
+					outcolour = (outcolour * TraceScene(pScene, *reflect_ray, outcolour, tracelevel - 1, shadowray));
+				}
 			}
 		}
 
@@ -271,6 +279,7 @@ Colour RayTracer::CalculateLighting(std::vector<Light*>* lights, Vector3* campos
 				float spec_angle = normal.DotProduct(half_vector);
 				float spec_intensity = std::pow(spec_angle, mat->GetSpecPower() * 5);
 				Vector3 specular_color = mat->GetSpecularColour() * light_color * spec_intensity;
+				if (spec_angle < 0) specular_color = Colour(0, 0, 0);
 
 				outcolour = outcolour + diffuse_color + specular_color;
 			}
