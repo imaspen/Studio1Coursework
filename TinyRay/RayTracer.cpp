@@ -245,12 +245,32 @@ Colour RayTracer::CalculateLighting(std::vector<Light*>* lights, Vector3* campos
 		//i.e. diffuse using Lambertian model, for specular, you can use either Phong or Blinn-Phong model
 		while (lit_iter != lights->end())
 		{
-			//Get the normal to the surface at ray intersection
-			Vector3 normal = hitresult->normal;
-			
+			if (((Primitive*)hitresult->data)->m_primtype == Primitive::PRIMTYPE_Box
+			 || ((Primitive*)hitresult->data)->m_primtype == Primitive::PRIMTYPE_Sphere)
+                        {
+				Vector3 light_vector = (*lit_iter)->GetLightPosition() - hitresult->point;
+				light_vector.Normalise();
+				Vector3 normal = hitresult->normal;
+				Colour light_color = (*lit_iter)->GetLightColour();
+
+				//Diffuse Reflection
+				float diffuse_intensity = light_vector.DotProduct(normal);
+				Vector3 diffuse_color = (mat->GetDiffuseColour() * light_color) * diffuse_intensity;
+
+				//Specular Reflection
+				Vector3 cam_vector = *campos - hitresult->point;
+				cam_vector.Normalise();
+				Vector3 half_vector = light_vector + cam_vector;
+				half_vector = half_vector * (1/half_vector.Norm());
+				half_vector.Normalise();
+				float spec_angle = normal.DotProduct(half_vector);
+				float spec_intensity = std::pow(spec_angle, mat->GetSpecPower() * 5);
+				Vector3 specular_color = mat->GetSpecularColour() * light_color * spec_intensity;
+
+				outcolour = outcolour + diffuse_color + specular_color;
+			}
 			lit_iter++;
 		}
-		
 	}
 
 	return outcolour;
