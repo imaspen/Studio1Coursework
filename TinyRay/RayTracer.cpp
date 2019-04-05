@@ -184,17 +184,22 @@ Colour RayTracer::TraceScene(Scene* pScene, Ray& ray, Colour incolour, int trace
 
 		if (m_traceflag & TRACE_SHADOW)
 		{
-			//Trace the shadow ray
-			Ray *shadowRay = new Ray();
-			Vector3 start = result.point;
-			Vector3 end = light_list->at(0)->GetLightPosition();
-			Vector3 direction = end - start;
-			direction.Normalise();
-			shadowRay->SetRay(start, direction);
-			RayHitResult shadowRayHitResult = pScene->IntersectByRay(*shadowRay);
-			if (((Primitive*)shadowRayHitResult.data)->m_primtype == Primitive::PRIMTYPE_Sphere ||
-				((Primitive*)shadowRayHitResult.data)->m_primtype == Primitive::PRIMTYPE_Box) {
-				outcolour = outcolour * Colour(0.25, 0.25, 0.25);
+			for (auto light_iter = light_list->begin(); light_iter != light_list->end(); ++light_iter)
+			{
+				//Trace the shadow ray
+				Ray *shadowRay = new Ray();
+				Vector3 start = result.point;
+				Vector3 end = (*light_iter)->GetLightPosition();
+				Vector3 direction = start - end;
+				direction.Normalise();
+				shadowRay->SetRay(end, direction);
+				RayHitResult shadowRayHitResult = pScene->IntersectByRay(*shadowRay);
+				if ((((Primitive*)shadowRayHitResult.data)->m_primtype == Primitive::PRIMTYPE_Sphere ||
+				     ((Primitive*)shadowRayHitResult.data)->m_primtype == Primitive::PRIMTYPE_Box)
+				     && shadowRayHitResult.data != result.data)
+				{
+					outcolour = outcolour * Colour(0.25, 0.25, 0.25);
+				}
 			}
 		}
 	}
