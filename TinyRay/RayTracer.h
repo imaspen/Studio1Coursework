@@ -39,6 +39,28 @@ class RayTracer
 		//			RayHitResult* hitresult		Hit result from ray-primitive intersection
 		Colour CalculateLighting(std::vector<Light*>* lights, Vector3* campos, RayHitResult* hitresult);
 
+		//Determine if a ray intersected with a box or sphere.
+		//Params:
+		//			cont RayHitResult& hitresult	The ray result to check
+		bool HitSphereOrBox(const RayHitResult& hitresult);
+
+		struct TraceParams {
+			Vector3 start_point;
+			Scene* pScene;
+			Colour incolour;
+			int tracelevel;
+			bool shadowray;
+			TraceParams(Vector3 start_point, Scene* pScene, Colour incolour, int tracelevel, bool shadowray) {
+				this->start_point = start_point;
+				this->pScene = pScene;
+				this->incolour = incolour;
+				this->tracelevel = tracelevel;
+				this->shadowray = shadowray;
+			}
+		};
+
+		Colour TraceReflectRefract(const Vector3 & vector, TraceParams& params);
+
 	public:
 		
 		enum TraceFlags
