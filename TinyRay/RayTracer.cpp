@@ -163,6 +163,7 @@ Colour RayTracer::TraceScene(Scene* pScene, Ray& ray, Colour incolour, int trace
 
 		if (HitSphereOrBox(result))
 		{
+			//Parameters for tracing reflections and refractions
 			TraceParams trace_params(result.point, pScene, outcolour, tracelevel, shadowray);
 
 			if (m_traceflag & TRACE_REFLECTION)
@@ -191,6 +192,7 @@ Colour RayTracer::TraceScene(Scene* pScene, Ray& ray, Colour incolour, int trace
 				Ray shadow_ray = Ray();
 				shadow_ray.SetRay(light_pos, shadow_vector);
 				RayHitResult shadow_hit_result = pScene->IntersectByRay(shadow_ray);
+				//Darken the pixel if a box or sphere is between it and the light
 				if (HitSphereOrBox(shadow_hit_result) && shadow_hit_result.data != result.data)
 				{
 					outcolour = outcolour * Colour(0.25, 0.25, 0.25);
@@ -241,6 +243,7 @@ Colour RayTracer::CalculateLighting(std::vector<Light*>* lights, Vector3* campos
 	{
 		while (lit_iter != lights->end())
 		{
+			//Setup some common variables
 			Colour diffuse_color(0, 0, 0);
 			Colour specular_color(0, 0, 0);
 
@@ -260,11 +263,13 @@ Colour RayTracer::CalculateLighting(std::vector<Light*>* lights, Vector3* campos
 			Vector3 half_vector = light_vector + cam_vector * (1 / half_vector.Norm());
 			half_vector.Normalise();
 			float spec_angle = normal.DotProduct(half_vector);
+			//Only show specular reflections when facing the light source
 			if (spec_angle > 0) {
 				float spec_intensity = std::pow(spec_angle, mat->GetSpecPower() * 5);
 				specular_color = mat->GetSpecularColour() * light_color * spec_intensity;
 			}
 
+			//Combine the reflection colors.
 			outcolour = outcolour + diffuse_color + specular_color;
 			lit_iter++;
 		}
@@ -276,7 +281,7 @@ Colour RayTracer::CalculateLighting(std::vector<Light*>* lights, Vector3* campos
 bool RayTracer::HitSphereOrBox(const RayHitResult& hitresult)
 {
 	Primitive::PRIMTYPE prim_type = ((Primitive*)hitresult.data)->m_primtype;
-	return prim_type & (Primitive::PRIMTYPE_Sphere | Primitive::PRIMTYPE_Box);
+	return prim_type == Primitive::PRIMTYPE_Sphere || prim_type == Primitive::PRIMTYPE_Box;
 }
 
 Colour RayTracer::TraceReflectRefract(const Vector3& vector, TraceParams& params)

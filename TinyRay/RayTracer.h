@@ -59,6 +59,10 @@ class RayTracer
 			}
 		};
 
+		//Gets the colour of a point of reflection or refraction
+		//Params:
+		//  const Vector3& vector	The normalized reflection/refraction vector
+		//  TraceParams& params		Params to pass to TraceScene
 		Colour TraceReflectRefract(const Vector3 & vector, TraceParams& params);
 
 	public:
